@@ -26,28 +26,15 @@ original_dim = 128
 beta = 0.2
 batch_size = 200
 latent_dim = 4 # 4 latent variables (per Moseley, et al. (2020))
-epochs = 500
+epochs = 10
 
 from tensorflow.keras.layers import BatchNormalization
-
-import os
-os.chdir("/u/paige/asinha/T-BOL/")
 
 # object-oritented version
 # https://wwww.tensorflow.org/guide/keras/custom_layers_and_models#setup
 
 # another source
 # https://keras.io/examples/generative/vae/
-
-class Sampling(layers.Layer):
-    # uses (z_mean, z_log_var) to sample z, the vector encoding an input array
-
-    def call(self, inputs):
-        z_mean, z_log_var = inputs
-        batch = tf.shape(z_mean)[0]
-        dim = tf.shape(z_mean)[1]
-        epsilon = tf.keras.backend.random_normal(shape = (batch, dim))
-        return z_mean + tf.exp(0.5 * z_log_var) * epsilon
 
 import os
 os.chdir("/u/paige/asinha/projectdir/")
@@ -64,6 +51,15 @@ for ii in range(len(data[0][0])):
     Y = [data[jj][2][ii] for jj in range(0, len(data))]
     x_raw.append(np.array(Y))
 
+class Sampling(layers.Layer):
+    """ uses (z_mean, z_log_var) to sample z, the vector encoding an input array """
+    def call(self, inputs):
+        z_mean, z_log_var = inputs
+        batch = tf.shape(z_mean)[0]
+        dim = tf.shape(z_mean)[1]
+        epsilon = tf.keras.backend.random_normal(shape = (batch, dim))
+        return z_mean + tf.exp(0.5 * z_log_var) * epsilon
+    
 encoder_inputs = keras.Input(shape = (original_dim,))
 x = tf.reshape(encoder_inputs, [-1, original_dim, 1])
 x = layers.BatchNormalization()(x)
@@ -117,7 +113,6 @@ predictions = autoencoder.predict(x_train2)
 transformed = np.squeeze(predictions, axis = 2)
 x_hat = scaler.inverse_transform(transformed)
 
-import os
 os.chdir("/u/paige/asinha/projectdir/modeled_profiles" + str(epochs) + "/")  ## CHANGE PROFILE DIRECTORY
 
 z_Sample = []
@@ -192,7 +187,6 @@ for iv, val in enumerate(vals):
 fig.legend()
 fig.savefig("z3_exercise" + str(epochs) + ".jpg") ## ADD SUFFIX
 
-import os
 os.chdir("/u/paige/asinha/projectdir/")
 latent_dump = np.asarray(z_arrays)
 np.savetxt('latent-dump" + str(epochs) + ".csv', latent_dump, fmt = '%1.5f') ## CHANGE FILE NAME
