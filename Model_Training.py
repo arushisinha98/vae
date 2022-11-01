@@ -1,7 +1,3 @@
-#######################################################################
-## USE !pip install INSTEAD OF IMPORT FOR UNSATISTIFIED REQUIREMENTS ##
-#######################################################################
-
 import math
 import numpy as np
 import pandas as pd
@@ -30,12 +26,9 @@ original_dim = 128
 beta = 0.2
 batch_size = 200
 latent_dim = 4 # 4 latent variables (per Moseley, et al. (2020))
+epochs = 500
 
 from tensorflow.keras.layers import BatchNormalization
-
-##############################################
-## NEED TO EDIT TO POINT TO T-BOL DIRECTORY ##
-##############################################
 
 import os
 os.chdir("/u/paige/asinha/T-BOL/")
@@ -56,29 +49,6 @@ class Sampling(layers.Layer):
         epsilon = tf.keras.backend.random_normal(shape = (batch, dim))
         return z_mean + tf.exp(0.5 * z_log_var) * epsilon
 
-files = ['lacus_mortis-tb-' + str(format(num, '03')) + '.xyz' for num in range(1,241)]
-
-def extract(file):
-    X, Y, Z = [], [], []
-    f = open(file, 'r')
-    for row, line in enumerate(f):
-        values = line.strip().split('\t')
-        X.append(float(values[0]))
-        Y.append(float(values[1]))
-        Z.append(float(values[2]))
-    data = [X, Y, Z]
-    return data
-
-data = [extract(fileX) for fileX in files]
-
-"""
-TIME ESTIMATE FOR THIS CELL OF CODE: 16 MINUTES
-"""
-
-#########################
-## ADD BREAKPOINT HERE ##
-#########################
-
 import os
 os.chdir("/u/paige/asinha/projectdir/")
 
@@ -93,10 +63,6 @@ x_raw = []
 for ii in range(len(data[0][0])):
     Y = [data[jj][2][ii] for jj in range(0, len(data))]
     x_raw.append(np.array(Y))
-
-#########################
-## ADD BREAKPOINT HERE ##
-#########################
 
 encoder_inputs = keras.Input(shape = (original_dim,))
 x = tf.reshape(encoder_inputs, [-1, original_dim, 1])
@@ -139,10 +105,10 @@ autoencoder.compile(optimizer, loss = tf.keras.losses.MeanSquaredError())
 
 scaler = MinMaxScaler()
 x_norm = scaler.fit_transform(x_train2)
-x_vae = autoencoder.fit(x_train2, x_train2, epochs = 10, batch_size = 200, validation_split = 0.2, shuffle = True) ## CHANGE EPOCHS
-autoencoder.save('VAE-10e') ## CHANGE SAVED MODEL
-decoder.save('Decoder-10e') ## CHANGE SAVED MODEL
-encoder.save('Encoder-10e') ## CHANGE SAVED MODEL
+x_vae = autoencoder.fit(x_train2, x_train2, epochs = epochs, batch_size = 200, validation_split = 0.2, shuffle = True) ## CHANGE EPOCHS
+autoencoder.save('VAE-' + str(epochs) + 'e') ## CHANGE SAVED MODEL
+decoder.save('Decoder-' + str(epochs) + 'e') ## CHANGE SAVED MODEL
+encoder.save('Encoder-' + str(epochs) + 'e') ## CHANGE SAVED MODEL
 
 X = [0.1*jj - 0.05 for jj in range(1, len(data)+1)]
 x_fit = np.linspace(0, 24, 121)
@@ -151,12 +117,8 @@ predictions = autoencoder.predict(x_train2)
 transformed = np.squeeze(predictions, axis = 2)
 x_hat = scaler.inverse_transform(transformed)
 
-#########################
-## ADD BREAKPOINT HERE ##
-#########################
-
 import os
-os.chdir("/u/paige/asinha/projectdir/modeled_profiles10/")  ## CHANGE PROFILE DIRECTORY
+os.chdir("/u/paige/asinha/projectdir/modeled_profiles" + str(epochs) + "/")  ## CHANGE PROFILE DIRECTORY
 
 z_Sample = []
 for ix, xx in enumerate(x_train2):
@@ -186,7 +148,7 @@ for iv, val in enumerate(vals):
     plt.ylim(0,400)
     plt.xlim(0,25)
 fig.legend()
-fig.savefig("z0_exercise10.jpg") ## ADD SUFFIX
+fig.savefig("z0_exercise" + str(epochs) + ".jpg") ## ADD SUFFIX
 
 fig = plt.figure(figsize = (5, 5))
 vals = np.linspace(min(z_arrays[1]), max(z_arrays[1]), 6)
@@ -200,7 +162,7 @@ for iv, val in enumerate(vals):
     plt.ylim(0,400)
     plt.xlim(0,25)
 fig.legend()
-fig.savefig("z1_exercise10.jpg") ## ADD SUFFIX
+fig.savefig("z1_exercise" + str(epochs) + ".jpg") ## ADD SUFFIX
 
 fig = plt.figure(figsize = (5, 5))
 vals = np.linspace(min(z_arrays[2]), max(z_arrays[2]), 6)
@@ -214,7 +176,7 @@ for iv, val in enumerate(vals):
     plt.ylim(0,400)
     plt.xlim(0,25)
 fig.legend()
-fig.savefig("z2_exercise10.jpg") ## ADD SUFFIX
+fig.savefig("z2_exercise" + str(epochs) + ".jpg") ## ADD SUFFIX
 
 fig = plt.figure(figsize = (5, 5))
 vals = np.linspace(min(z_arrays[3]), max(z_arrays[3]), 6)
@@ -228,9 +190,9 @@ for iv, val in enumerate(vals):
     plt.ylim(0,400)
     plt.xlim(0,25)
 fig.legend()
-fig.savefig("z3_exercise10.jpg") ## ADD SUFFIX
+fig.savefig("z3_exercise" + str(epochs) + ".jpg") ## ADD SUFFIX
 
 import os
 os.chdir("/u/paige/asinha/projectdir/")
 latent_dump = np.asarray(z_arrays)
-np.savetxt('latent-dump10.csv', latent_dump, fmt = '%1.5f') ## CHANGE FILE NAME
+np.savetxt('latent-dump" + str(epochs) + ".csv', latent_dump, fmt = '%1.5f') ## CHANGE FILE NAME
