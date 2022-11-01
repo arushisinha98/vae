@@ -1,7 +1,3 @@
-#######################################################################
-## USE !pip install INSTEAD OF IMPORT FOR UNSATISTIFIED REQUIREMENTS ##
-#######################################################################
-
 import math
 import numpy as np
 import pandas as pd
@@ -31,31 +27,10 @@ beta = 0.2
 batch_size = 200
 latent_dim = 4 # 4 latent variables (per Moseley, et al. (2020))
 
-from tensorflow.keras.layers import BatchNormalization
-
-##############################################
-## NEED TO EDIT TO POINT TO T-BOL DIRECTORY ##
-##############################################
-
 import os
 os.chdir("/u/paige/asinha/T-BOL/")
 
-# object-oritented version
-# https://wwww.tensorflow.org/guide/keras/custom_layers_and_models#setup
-
-# another source
-# https://keras.io/examples/generative/vae/
-
-class Sampling(layers.Layer):
-    # uses (z_mean, z_log_var) to sample z, the vector encoding an input array
-
-    def call(self, inputs):
-        z_mean, z_log_var = inputs
-        batch = tf.shape(z_mean)[0]
-        dim = tf.shape(z_mean)[1]
-        epsilon = tf.keras.backend.random_normal(shape = (batch, dim))
-        return z_mean + tf.exp(0.5 * z_log_var) * epsilon
-
+# extract Lacus Mortis temperature profiles
 files = ['lacus_mortis-tb-' + str(format(num, '03')) + '.xyz' for num in range(1,241)]
 
 def extract(file):
@@ -70,14 +45,6 @@ def extract(file):
     return data
 
 data = [extract(fileX) for fileX in files]
-
-"""
-TIME ESTIMATE FOR THIS CELL OF CODE: 16 MINUTES
-"""
-
-#########################
-## ADD BREAKPOINT HERE ##
-#########################
 
 X = [0.1*jj - 0.05 for jj in range(1,len(data)+1)]
 
@@ -119,10 +86,6 @@ for ix, xx in enumerate(x_train):
     xx = periodic_padding(xx, 4)
     x_train2.append(xx.astype('float32'))
 x_train2 = np.asarray(x_train2)
-
-#########################
-## ADD BREAKPOINT HERE ##
-#########################
 
 x_train_dump = np.asarray(x_train2)
 np.savetxt('GPR-padded-dump.csv', x_train_dump, fmt = '%1.3f')
