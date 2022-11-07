@@ -1,4 +1,4 @@
-# vae
+# variational-autoencoder
 
 This project ingests carefully selected suite of nearly 2 million lunar surface temperature profiles, collected during the <a href = "https://www.jpl.nasa.gov/missions/diviner-lunar-radiometer-experiment-dlre">Diviner Lunar Radiometer Experiment</a>. The goal of this project is to train a Variational Autoencoder (VAE) on these profiles and to then explore the latent space created by the resultant model to understand if some physically informed trends can and have been learned by the unsupervised model. A potential extention of this project involves introducing physically informed loss functions to further constrain and expedite this learning. This is currently a work in progress, incumbent upon the results of some physics-based/mechanistic models which will serve as the ground truth from which may compute residuals.
 
