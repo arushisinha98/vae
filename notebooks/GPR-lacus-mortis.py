@@ -22,11 +22,6 @@ from sklearn.pipeline import make_pipeline
 from sklearn import preprocessing
 from keras.wrappers.scikit_learn import KerasRegressor
 
-original_dim = 128
-beta = 0.2
-batch_size = 200
-latent_dim = 4 # 4 latent variables (per Moseley, et al. (2020))
-
 import os
 os.chdir("/u/paige/asinha/T-BOL/")
 
@@ -88,7 +83,6 @@ for ix, xx in enumerate(x_train):
 x_train2 = np.asarray(x_train2)
 
 x_train_dump = np.asarray(x_train2)
-np.savetxt('GPR-padded-dump.csv', x_train_dump, fmt = '%1.3f')
 
 import os
 os.chdir("/u/paige/asinha/projectdir/")
