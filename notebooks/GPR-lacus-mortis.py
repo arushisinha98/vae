@@ -7,28 +7,33 @@ import tensorflow
 from keras import layers
 import matplotlib.pyplot as plt
 import tensorflow as tf
+
 from sklearn.gaussian_process import GaussianProcessRegressor
 import scipy.optimize
 from sklearn.gaussian_process.kernels import Matern
 
 import GPy
 
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-from sklearn.pipeline import Pipeline
-from sklearn.pipeline import make_pipeline
-from sklearn import preprocessing
-from keras.wrappers.scikit_learn import KerasRegressor
-
 import os
+import re
+import datetime
+
 os.chdir("/u/paige/asinha/T-BOL/")
 
-# extract Lacus Mortis temperature profiles
+# extract Lacus Mortis temperature profiles (.xyz files)
 files = ['lacus_mortis-tb-' + str(format(num, '03')) + '.xyz' for num in range(1,241)]
 
+"""
+# extract all .xyz files in raw data query folder
+files = []
+
+for f in os.listdir():
+    if re.search('.xyz', f):
+        results += [each for each in os.listdir() if each.endswith('.xyz')]
+"""
+
 def extract(file):
+    """ function to extract lat-lon coordinates (X, Y) and temperature value (Z) from the .xyz files """
     X, Y, Z = [], [], []
     f = open(file, 'r')
     for row, line in enumerate(f):
@@ -47,6 +52,7 @@ x_fit = np.linspace(0, 24, 121)
 x_fit = x_fit[0:-1] # removed hour 24 = hour 0 (added later with padding)
 x_raw, x_train = [], []
 
+""" loop to interplote the raw data (x_raw) using GPR and to store the interpolated data (x_train) """
 # assumes each file has the same number of pixels
 for ii in range(len(data[0][0])):
     Y = [data[jj][2][ii] for jj in range(0, len(data))]
@@ -75,6 +81,7 @@ def periodic_padding(array, pad):
         output[index + N + pad] = array[index]
     return output
 
+""" loop to pad x_train and to store it as x_train2 """
 x_train = np.asarray(x_train)
 x_train2 = []
 for ix, xx in enumerate(x_train):
@@ -84,6 +91,6 @@ x_train2 = np.asarray(x_train2)
 
 x_train_dump = np.asarray(x_train2)
 
-import os
+""" TO DO: SAVE WITH RUN-TIME DATETIME FOR DATA VERSIONING """
 os.chdir("/u/paige/asinha/projectdir/")
 np.savetxt('GPR-padded-dump.csv', x_train_dump, fmt = '%1.3f')
