@@ -199,5 +199,8 @@ os.chdir("/u/paige/asinha/projectdir/")
 latent_dump = np.asarray(z_arrays)
 np.savetxt('latent-values.csv', latent_dump, fmt = '%1.5f') ## CHANGE FILE NAME
 
-with open(f'pickle_folder/VAE_{epochs}e_{timestamp}.pickle', 'wb') as filename:
+filename = open(f'pickle_folder/VAE_{epochs}e_{timestamp}.pickle', 'wb')
+try:
     pickle.dump(autoencoder, filename, protocol = pickle.HIGHEST_PROTOCOL)
+finally:
+    filename.close()
