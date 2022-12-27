@@ -50,7 +50,7 @@ X = [0.1*jj - 0.05 for jj in range(1,len(data)+1)]
 
 x_fit = np.linspace(0, 24, 121)
 x_fit = x_fit[0:-1] # removed hour 24 = hour 0 (added later with padding)
-x_raw, x_train = [], []
+x_raw, x_gpr = [], []
 
 """ loop to interplote the raw data (x_raw) using GPR and to store the interpolated data (x_train) """
 # assumes each file has the same number of pixels
@@ -67,11 +67,11 @@ for ii in range(len(data[0][0])):
     gpr.constrain_positive()
     gpr.optimize()
     y_pred = gpr.predict(x_fit.reshape(-1,1))
-    x_train.append(np.transpose(y_pred[0]))
-    x_train[ii] = x_train[ii][0]
+    x_gpr.append(np.transpose(y_pred[0]))
+    x_gpr[ii] = x_gpr[ii][0]
 
-x_train_dump = np.asarray(x_train)
+x_gpr_dump = np.asarray(x_gpr)
 
 """ TO DO: SAVE WITH RUN-TIME DATETIME FOR DATA VERSIONING """
 os.chdir("/u/paige/asinha/projectdir/")
-np.savetxt('GPR-raw.csv', x_train_dump, fmt = '%1.3f')
+np.savetxt('GPR-lacus-mortis.csv', x_gpr_dump, fmt = '%1.3f')
