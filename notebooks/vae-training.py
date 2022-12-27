@@ -8,11 +8,6 @@ from keras import backend as K
 from keras import layers
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from sklearn.gaussian_process import GaussianProcessRegressor
-import scipy.optimize
-from sklearn.gaussian_process.kernels import Matern
-
-import GPy
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
