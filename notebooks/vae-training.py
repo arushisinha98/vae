@@ -24,12 +24,14 @@ from sklearn import preprocessing
 from keras.wrappers.scikit_learn import KerasRegressor
 
 import os
+import pickle
+import datetime
 
 original_dim = 128
 beta = 0.2
 batch_size = 200
 latent_dim = 4 # 4 latent variables (per Moseley, et al. (2020))
-epochs = 10
+epochs = 1000
 
 from tensorflow.keras.layers import BatchNormalization
 
@@ -45,18 +47,10 @@ K.tensorflow_backend._get_available_gpus()
 # another source
 # https://keras.io/examples/generative/vae/
 
-os.chdir("/u/paige/asinha/projectdir/")
-with open('GPR-padded-dump.csv') as file_name:
-    x_train_dump = np.loadtxt(file_name, delimiter = " ")
-x_train2 = np.asarray(x_train_dump)
-print(x_train2.shape)
-
-x_raw = []
-# assumes each file has the same number of pixels
-for ii in range(len(data[0][0])):
-    Y = [data[jj][2][ii] for jj in range(0, len(data))]
-    x_raw.append(np.array(Y))
-
+## CREATE PROFILE DIRECTORY
+timestamp = datetime.datetime.now().strftime("%Y%m%d")
+os.mkdir("/u/paige/asinha/projectdir/model" + timestamp + "/")
+    
 class Sampling(layers.Layer):
     """ uses (z_mean, z_log_var) to sample z, the vector encoding an input array """
     def call(self, inputs):
@@ -106,8 +100,8 @@ optimizer = tf.keras.optimizers.Adam(learning_rate = 1e-3)
 autoencoder.compile(optimizer, loss = tf.keras.losses.MeanSquaredError())
 
 scaler = MinMaxScaler()
-x_norm = scaler.fit_transform(x_train2)
-x_vae = autoencoder.fit(x_train2, x_train2, epochs = epochs, batch_size = 200, validation_split = 0.2, shuffle = True) ## CHANGE EPOCHS
+x_norm = scaler.fit_transform(x_train)
+x_vae = autoencoder.fit(x_train, x_train, epochs = epochs, batch_size = 200, validation_split = 0.2, shuffle = True) ## CHANGE EPOCHS
 autoencoder.save('VAE-' + str(epochs) + 'e') ## CHANGE SAVED MODEL
 decoder.save('Decoder-' + str(epochs) + 'e') ## CHANGE SAVED MODEL
 encoder.save('Encoder-' + str(epochs) + 'e') ## CHANGE SAVED MODEL
@@ -118,8 +112,6 @@ x_fit = x_fit[0:-1] # removed hour 24 = hour 0 (added later with padding)
 predictions = autoencoder.predict(x_train2)
 transformed = np.squeeze(predictions, axis = 2)
 x_hat = scaler.inverse_transform(transformed)
-
-os.chdir("/u/paige/asinha/projectdir/modeled_profiles" + str(epochs) + "/")  ## CHANGE PROFILE DIRECTORY
 
 z_Sample = []
 for ix, xx in enumerate(x_train2):
@@ -195,4 +187,4 @@ fig.savefig("z3_exercise" + str(epochs) + ".jpg") ## ADD SUFFIX
 
 os.chdir("/u/paige/asinha/projectdir/")
 latent_dump = np.asarray(z_arrays)
-np.savetxt('latent-dump" + str(epochs) + ".csv', latent_dump, fmt = '%1.5f') ## CHANGE FILE NAME
+np.savetxt('latent-values" + str(epochs) + ".csv', latent_dump, fmt = '%1.5f') ## CHANGE FILE NAME
