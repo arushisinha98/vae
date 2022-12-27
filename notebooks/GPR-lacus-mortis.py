@@ -70,27 +70,8 @@ for ii in range(len(data[0][0])):
     x_train.append(np.transpose(y_pred[0]))
     x_train[ii] = x_train[ii][0]
 
-def periodic_padding(array, pad):
-    N = len(array)
-    M = N + 2*pad
-    output = np.zeros(M)
-    for index in range(pad, N+pad):
-        output[index] = array[index - pad]
-    for index in range(0, pad):
-        output[index] = array[index + N - pad]
-        output[index + N + pad] = array[index]
-    return output
-
-""" loop to pad x_train and to store it as x_train2 """
-x_train = np.asarray(x_train)
-x_train2 = []
-for ix, xx in enumerate(x_train):
-    xx = periodic_padding(xx, 4)
-    x_train2.append(xx.astype('float32'))
-x_train2 = np.asarray(x_train2)
-
-x_train_dump = np.asarray(x_train2)
+x_train_dump = np.asarray(x_train)
 
 """ TO DO: SAVE WITH RUN-TIME DATETIME FOR DATA VERSIONING """
 os.chdir("/u/paige/asinha/projectdir/")
-np.savetxt('GPR-padded-dump.csv', x_train_dump, fmt = '%1.3f')
+np.savetxt('GPR-raw.csv', x_train_dump, fmt = '%1.3f')
