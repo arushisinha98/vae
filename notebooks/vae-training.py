@@ -47,6 +47,11 @@ K.tensorflow_backend._get_available_gpus()
 # another source
 # https://keras.io/examples/generative/vae/
 
+os.chdir("/u/paige/asinha/projectdir/")
+with open('padded-data-dump.csv') as file_name:
+    data = np.loadtxt(file_name, delimiter = " ")
+x_train = np.asarray(data)
+
 ## CREATE PROFILE DIRECTORY
 timestamp = datetime.datetime.now().strftime("%Y%m%d")
 os.mkdir("/u/paige/asinha/projectdir/model" + timestamp + "/")
@@ -109,12 +114,14 @@ encoder.save('Encoder-' + str(epochs) + 'e') ## CHANGE SAVED MODEL
 X = [0.1*jj - 0.05 for jj in range(1, len(data)+1)]
 x_fit = np.linspace(0, 24, 121)
 x_fit = x_fit[0:-1] # removed hour 24 = hour 0 (added later with padding)
-predictions = autoencoder.predict(x_train2)
+predictions = autoencoder.predict(x_train)
 transformed = np.squeeze(predictions, axis = 2)
 x_hat = scaler.inverse_transform(transformed)
 
+os.mkdir("/u/paige/asinha/projectdir/model" + timestamp + "/profiles/")
+
 z_Sample = []
-for ix, xx in enumerate(x_train2):
+for ix, xx in enumerate(x_train):
     fig = plt.figure(figsize = (5,5))
     plt.scatter(X, x_raw[ix])
     plt.plot(x_fit, xx[4:124], label = "GPR")
@@ -128,6 +135,14 @@ for ix, xx in enumerate(x_train2):
     z = encoder.predict(x_norm[ix:ix+1])
     z_Sample.append(z)
 z_arrays = [z[0][0] for z in z_Sample]
+
+os.chdir("/u/paige/asinha/projectdir/model" + timestamp + "/")
+
+print("Mean latent values:")
+print("z0: " + str(np.mean(z_arrays[0])))
+print("z1: " + str(np.mean(z_arrays[1])))
+print("z2: " + str(np.mean(z_arrays[2])))
+print("z3: " + str(np.mean(z_arrays[3])))
 
 fig = plt.figure(figsize = (5, 5))
 vals = np.linspace(min(z_arrays[0]), max(z_arrays[0]), 6)
@@ -187,4 +202,8 @@ fig.savefig("z3_exercise" + str(epochs) + ".jpg") ## ADD SUFFIX
 
 os.chdir("/u/paige/asinha/projectdir/")
 latent_dump = np.asarray(z_arrays)
-np.savetxt('latent-values" + str(epochs) + ".csv', latent_dump, fmt = '%1.5f') ## CHANGE FILE NAME
+np.savetxt('latent-values.csv', latent_dump, fmt = '%1.5f') ## CHANGE FILE NAME
+
+os.chdir("/u/paige/asinha/projectdir/pickle_folder/")
+with open(f'VAE_{epochs}e_{timestamp}.pickle', 'wb') as filename:
+    pickle.dump(autoencoder, filename, protocol = pickle.HIGHEST_PROTOCOL)
