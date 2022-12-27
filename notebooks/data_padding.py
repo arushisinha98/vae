@@ -1,3 +1,6 @@
+import numpy as np
+import os
+
 os.chdir("/u/paige/asinha/projectdir/")
 with open('data-dump.csv') as file_name:
     data = np.loadtxt(file_name, delimiter = " ")
@@ -27,3 +30,8 @@ if x_raw.shape[1] == 120:
         xx = periodic_padding(xx, 4)
         x_train.append(xx.astype('float32'))
     x_train = np.asarray(x_train)
+    
+print("Size of x_train: ", x_train.shape)
+
+os.chdir("/u/paige/asinha/projectdir/")
+np.savetxt('padded-data-dump.csv', x_train, fmt = '%1.3f')
