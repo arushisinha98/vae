@@ -30,11 +30,13 @@ epochs = 1000
 
 from tensorflow.keras.layers import BatchNormalization
 
+"""
 # confirm that TensorFlow is using GPU
 sess = tf.Session(config = tf.ConfigProto(log_device_placement = True))
 gpus = tf.config.list_physical_devices('GPU')
 print("Number of GPUs Available: ", len(gpus))
 K.tensorflow_backend._get_available_gpus()
+"""
 
 # object-oritented version
 # https://wwww.tensorflow.org/guide/keras/custom_layers_and_models#setup
@@ -42,12 +44,14 @@ K.tensorflow_backend._get_available_gpus()
 # another source
 # https://keras.io/examples/generative/vae/
 
+# load x_train from padded-data-dump.csv
 os.chdir("/u/paige/asinha/projectdir/")
 with open('padded-data-dump.csv') as file_name:
     data = np.loadtxt(file_name, delimiter = " ")
 x_train = np.asarray(data)
 
-## CREATE PROFILE DIRECTORY
+## CREATE MODEL DIRECTORY
+# store: autoencoder, encoder, decoder, training data, profiles, latent variables
 timestamp = datetime.datetime.now().strftime("%Y%m%d")
 os.mkdir("/u/paige/asinha/projectdir/model" + timestamp + "/")
     
@@ -101,7 +105,7 @@ autoencoder.compile(optimizer, loss = tf.keras.losses.MeanSquaredError())
 
 scaler = MinMaxScaler()
 x_norm = scaler.fit_transform(x_train)
-x_vae = autoencoder.fit(x_train, x_train, epochs = epochs, batch_size = 200, validation_split = 0.2, shuffle = True) ## CHANGE EPOCHS
+x_vae = autoencoder.fit(x_norm, x_norm, epochs = epochs, batch_size = 200, validation_split = 0.2, shuffle = True) ## CHANGE EPOCHS
 autoencoder.save('VAE-' + str(epochs) + 'e') ## CHANGE SAVED MODEL
 decoder.save('Decoder-' + str(epochs) + 'e') ## CHANGE SAVED MODEL
 encoder.save('Encoder-' + str(epochs) + 'e') ## CHANGE SAVED MODEL
@@ -109,18 +113,15 @@ encoder.save('Encoder-' + str(epochs) + 'e') ## CHANGE SAVED MODEL
 X = [0.1*jj - 0.05 for jj in range(1, len(data)+1)]
 x_fit = np.linspace(0, 24, 121)
 x_fit = x_fit[0:-1] # removed hour 24 = hour 0 (added later with padding)
-predictions = autoencoder.predict(x_train)
+predictions = autoencoder.predict(x_norm)
 transformed = np.squeeze(predictions, axis = 2)
 x_hat = scaler.inverse_transform(transformed)
-
-os.mkdir("/u/paige/asinha/projectdir/model" + timestamp + "/profiles/")
 
 z_Sample = []
 for ix, xx in enumerate(x_train):
     fig = plt.figure(figsize = (5,5))
-    plt.scatter(X, x_raw[ix])
     plt.plot(x_fit, xx[4:124], label = "GPR")
-    x_predict = transformed[ix]
+    x_predict = x_hat[ix]
     plt.plot(x_fit, x_predict[4:124], label = "VAE")
     plt.legend()
     plt.ylim(0,400)
@@ -131,7 +132,14 @@ for ix, xx in enumerate(x_train):
     z_Sample.append(z)
 z_arrays = [z[0][0] for z in z_Sample]
 
-os.chdir("/u/paige/asinha/projectdir/model" + timestamp + "/")
+model_dict = {'autoencoder': [autoencoder],
+              'encoder': [encoder],
+              'decoder': [decoder],
+              'x_train': [x_train],
+              'scaler': ['MinMaxScaler()'],
+              'x_hat': [x_hat],
+              'latent_space': [z_arrays]
+}
 
 print("Mean latent values:")
 print("z0: " + str(np.mean(z_arrays[0])))
@@ -195,13 +203,6 @@ for iv, val in enumerate(vals):
 fig.legend()
 fig.savefig("z3_exercise" + str(epochs) + ".jpg") ## ADD SUFFIX
 
-os.chdir("/u/paige/asinha/projectdir/")
-latent_dump = np.asarray(z_arrays)
-np.savetxt('latent-values.csv', latent_dump, fmt = '%1.5f') ## CHANGE FILE NAME
-
-filename = "pickle_folder/VAE_{epochs}e_{timestamp}.pickle".format(epochs = epochs, timestamp = timestamp)
-file = open(filename, 'wb')
-try:
-    pickle.dump(autoencoder, file, protocol = pickle.HIGHEST_PROTOCOL)
-finally:
-    filename.close()
+os.chdir("/u/paige/asinha/projectdir/pickle_folder/")
+with open(f'Model_{epochs}e_{timestamp}.pickle', 'wb'):
+    pickle.dump(model_dict, file, protocol = pickle.HIGHEST_PROTOCOL)
