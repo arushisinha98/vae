@@ -1,0 +1,14 @@
+name: myenv
+dependencies:
+  - csv
+  - datetime
+  - keras
+  - matplotlib
+  - numpy
+  - os
+  - pandas
+  - pickle
+  - pip
+  - python
+  - sklearn
+  - tensorflow
